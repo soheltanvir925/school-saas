@@ -44,5 +44,4 @@ docker-compose.override.yml
 # Scratch/Dev
 scratch/
 
-# Docs
-docs/
+
