@@ -1,0 +1,338 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+<title>{% if editing %}Edit{% else %}Add{% endif %} Teacher - {{ request.user.school.name|default:"School" }}</title>
+
+<link rel="shortcut icon" href="{% static 'preskool/img/favicon.png' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap">
+
+<link rel="stylesheet" href="{% static 'preskool/plugins/bootstrap/css/bootstrap.min.css' %}">
+
+<link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/fontawesome.min.css' %}">
+<link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/all.min.css' %}">
+
+<link rel="stylesheet" href="{% static 'preskool/css/style.css' %}">
+</head>
+<body>
+
+<div class="main-wrapper">
+
+<div class="header">
+
+<div class="header-left">
+<a href="{% url 'core:dashboard' %}" class="logo">
+{% if request.user.school.logo %}
+<img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" style="max-height:40px; width:auto;">
+{% else %}
+<img src="{% static 'preskool/img/logo.png' %}" alt="Logo">
+{% endif %}
+</a>
+<a href="{% url 'core:dashboard' %}" class="logo logo-small">
+{% if request.user.school.logo %}
+<img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" width="30" height="30" style="object-fit:contain;">
+{% else %}
+<img src="{% static 'preskool/img/logo-small.png' %}" alt="Logo" width="30" height="30">
+{% endif %}
+</a>
+</div>
+
+<a href="javascript:void(0);" id="toggle_btn">
+<i class="fas fa-align-left"></i>
+</a>
+
+<div class="top-nav-search">
+<form>
+<input type="text" class="form-control" placeholder="Search here">
+<button class="btn" type="submit"><i class="fas fa-search"></i></button>
+</form>
+</div>
+
+<a class="mobile_btn" id="mobile_btn">
+<i class="fas fa-bars"></i>
+</a>
+
+<ul class="nav user-menu">
+
+<li class="nav-item dropdown noti-dropdown">
+<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+<i class="far fa-bell"></i> <span class="badge badge-pill">3</span>
+</a>
+<div class="dropdown-menu notifications">
+<div class="topnav-dropdown-header">
+<span class="notification-title">Notifications</span>
+<a href="javascript:void(0)" class="clear-noti"> Clear All </a>
+</div>
+<div class="noti-content">
+<ul class="notification-list">
+<li class="notification-message">
+<a href="#">
+<div class="media">
+<span class="avatar avatar-sm">
+<img class="avatar-img rounded-circle" alt="User Image" src="{% static 'preskool/img/profiles/avatar-02.jpg' %}">
+</span>
+<div class="media-body">
+<p class="noti-details"><span class="noti-title">Carlson Tech</span> has approved <span class="noti-title">your estimate</span></p>
+<p class="noti-time"><span class="notification-time">4 mins ago</span></p>
+</div>
+</div>
+</a>
+</li>
+</ul>
+</div>
+<div class="topnav-dropdown-footer">
+<a href="#">View all Notifications</a>
+</div>
+</div>
+</li>
+
+<li class="nav-item dropdown has-arrow">
+<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+<span class="user-img"><img class="rounded-circle" src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" width="31" alt="Ryan Taylor"></span>
+</a>
+<div class="dropdown-menu">
+<div class="user-header">
+<div class="avatar avatar-sm">
+<img src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" alt="User Image" class="avatar-img rounded-circle">
+</div>
+<div class="user-text">
+<h6>{{ request.user.get_full_name|default:request.user.username }}</h6>
+<p class="text-muted mb-0">Administrator</p>
+</div>
+</div>
+<a class="dropdown-item" href="#">My Profile</a>
+<a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+</div>
+</li>
+
+</ul>
+
+</div>
+
+
+<div class="sidebar" id="sidebar">
+<div class="sidebar-inner slimscroll">
+<div id="sidebar-menu" class="sidebar-menu">
+<ul>
+<li class="menu-title">
+<span>Main Menu</span>
+</li>
+<li class="submenu">
+<a href="#"><i class="fas fa-user-graduate"></i> <span> Dashboard</span> <span class="menu-arrow"></span></a>
+<ul>
+<li><a href="{% url 'core:dashboard' %}">Admin Dashboard</a></li>
+</ul>
+</li>
+<li class="submenu">
+<a href="#"><i class="fas fa-user-graduate"></i> <span> Students</span> <span class="menu-arrow"></span></a>
+<ul>
+<li><a href="{% url 'schools:student_list' %}">Student List</a></li>
+</ul>
+</li>
+<li class="submenu active">
+<a href="#"><i class="fas fa-chalkboard-teacher"></i> <span> Teachers</span> <span class="menu-arrow"></span></a>
+<ul>
+<li><a href="{% url 'schools:teacher_list' %}">Teacher List</a></li>
+<li><a href="{% url 'schools:teacher_add' %}" class="active">{% if editing %}Edit{% else %}Add{% endif %} Teacher</a></li>
+</ul>
+</li>
+<li><a href="{% url 'schools:exam_list' %}"><i class="fas fa-pencil-alt"></i> <span>Exams</span></a></li>
+<li><a href="{% url 'schools:grade_list' %}"><i class="fas fa-chart-line"></i> <span>Grades</span></a></li>
+<li><a href="{% url 'schools:feepayment_list' %}"><i class="fas fa-money-bill"></i> <span>Fees</span></a></li>
+<li><a href="{% url 'schools:attendance_list' %}"><i class="fas fa-calendar-check"></i> <span>Attendance</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="page-wrapper">
+<div class="content container-fluid">
+
+<div class="page-header">
+<div class="row align-items-center">
+<div class="col">
+<h3 class="page-title">{% if editing %}Edit{% else %}Add{% endif %} Teachers</h3>
+<ul class="breadcrumb">
+<li class="breadcrumb-item"><a href="{% url 'schools:teacher_list' %}">Teachers</a></li>
+<li class="breadcrumb-item active">{% if editing %}Edit{% else %}Add{% endif %} Teachers</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-12">
+<div class="card">
+<div class="card-body">
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+{{ message }}
+<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+<span aria-hidden="true">&times;</span>
+</button>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+{{ form.non_field_errors }}
+<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+<span aria-hidden="true">&times;</span>
+</button>
+</div>
+{% endif %}
+
+<div class="row">
+<div class="col-12">
+<h5 class="form-title"><span>Basic Details</span></h5>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Teacher ID</label>
+{{ form.employee_id }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Name</label>
+{{ form.first_name }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Gender</label>
+{{ form.gender }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Profile Photo</label>
+{{ form.profile_photo }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Date of Birth</label>
+{{ form.date_of_birth }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Mobile</label>
+{{ form.phone }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Joining Date</label>
+{{ form.date_of_joining }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Qualification</label>
+{{ form.qualification }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Experience</label>
+{{ form.experience_years }}
+</div>
+</div>
+<div class="col-12">
+<h5 class="form-title"><span>Login Details</span></h5>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Username</label>
+{{ form.username }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Email ID</label>
+{{ form.email }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Password</label>
+{{ form.password }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Repeat Password</label>
+{{ form.confirm_password }}
+</div>
+</div>
+<div class="col-12">
+<h5 class="form-title"><span>Address</span></h5>
+</div>
+<div class="col-12">
+<div class="form-group">
+<label>Address</label>
+{{ form.address }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>City</label>
+{{ form.city }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>State</label>
+{{ form.state }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Zip Code</label>
+{{ form.zip_code }}
+</div>
+</div>
+<div class="col-12 col-sm-6">
+<div class="form-group">
+<label>Country</label>
+{{ form.country }}
+</div>
+</div>
+<div class="col-12">
+<button type="submit" class="btn btn-primary">Submit</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>Copyright &copy; 2026 EduSaaS.</p>
+</footer>
+
+</div>
+
+</div>
+
+
+<script src="{% static 'preskool/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'preskool/js/popper.min.js' %}"></script>
+<script src="{% static 'preskool/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'preskool/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'preskool/js/script.js' %}"></script>
+</body>
+
+</html>

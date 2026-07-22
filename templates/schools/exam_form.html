@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+<title>{% if object %}Edit{% else %}Add{% endif %} Exam - {{ request.user.school.name|default:"School" }}</title>
+<link rel="shortcut icon" href="{% static 'preskool/img/favicon.png' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap">
+<link rel="stylesheet" href="{% static 'preskool/plugins/bootstrap/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/fontawesome.min.css' %}">
+<link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'preskool/css/style.css' %}">
+</head>
+<body>
+<div class="main-wrapper">
+<div class="header">
+<div class="header-left">
+<a href="{% url 'core:dashboard' %}" class="logo">
+{% if request.user.school.logo %}
+<img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" style="max-height:40px; width:auto;">
+{% else %}
+<img src="{% static 'preskool/img/logo.png' %}" alt="Logo">
+{% endif %}
+</a>
+<a href="{% url 'core:dashboard' %}" class="logo logo-small">
+{% if request.user.school.logo %}
+<img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" width="30" height="30" style="object-fit:contain;">
+{% else %}
+<img src="{% static 'preskool/img/logo-small.png' %}" alt="Logo" width="30" height="30">
+{% endif %}
+</a>
+</div>
+<a href="javascript:void(0);" id="toggle_btn"><i class="fas fa-align-left"></i></a>
+<div class="top-nav-search">
+<form><input type="text" class="form-control" placeholder="Search here"><button class="btn" type="submit"><i class="fas fa-search"></i></button></form>
+</div>
+<a class="mobile_btn" id="mobile_btn"><i class="fas fa-bars"></i></a>
+<ul class="nav user-menu">
+<li class="nav-item dropdown has-arrow">
+<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+<span class="user-img"><img class="rounded-circle" src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" width="31"></span>
+</a>
+<div class="dropdown-menu">
+<div class="user-header">
+<div class="avatar avatar-sm"><img src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" class="avatar-img rounded-circle"></div>
+<div class="user-text"><h6>{{ request.user.get_full_name|default:request.user.username }}</h6><p class="text-muted mb-0">{{ request.user.get_role_display }}</p></div>
+</div>
+<a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+</div>
+</li>
+</ul>
+</div>
+<div class="sidebar" id="sidebar">
+<div class="sidebar-inner slimscroll">
+<div id="sidebar-menu" class="sidebar-menu">
+<ul>
+<li class="menu-title"><span>Main Menu</span></li>
+<li><a href="{% url 'core:dashboard' %}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+<li><a href="{% url 'schools:teacher_list' %}"><i class="fas fa-chalkboard-teacher"></i> <span>Teachers</span></a></li>
+<li><a href="{% url 'schools:student_list' %}"><i class="fas fa-user-graduate"></i> <span>Students</span></a></li>
+<li><a href="{% url 'schools:stream_list' %}"><i class="fas fa-building"></i> <span>Streams</span></a></li>
+<li><a href="{% url 'schools:subject_list' %}"><i class="fas fa-book"></i> <span>Subjects</span></a></li>
+<li><a href="{% url 'schools:classroom_list' %}"><i class="fas fa-door-open"></i> <span>Classrooms</span></a></li>
+<li><a href="{% url 'schools:exam_list' %}"><i class="fas fa-pencil-alt"></i> <span>Exams</span></a></li>
+<li><a href="{% url 'schools:grade_list' %}"><i class="fas fa-star"></i> <span>Grades</span></a></li>
+<li><a href="{% url 'schools:feepayment_list' %}"><i class="fas fa-money-bill-wave"></i> <span>Fees</span></a></li>
+<li><a href="{% url 'schools:attendance_list' %}"><i class="fas fa-calendar-check"></i> <span>Attendance</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="page-wrapper">
+<div class="content container-fluid">
+<div class="page-header">
+<div class="row align-items-center">
+<div class="col">
+<h3 class="page-title">{% if object %}Edit{% else %}Add{% endif %} Exam</h3>
+<ul class="breadcrumb">
+<li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{% url 'schools:exam_list' %}">Exams</a></li>
+<li class="breadcrumb-item active">{% if object %}Edit{% else %}Add{% endif %}</li>
+</ul>
+</div>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">{{ message }}
+<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+</div>
+{% endfor %}
+{% endif %}
+<div class="row">
+<div class="col-sm-12">
+<div class="card">
+<div class="card-body">
+<form method="post">
+{% csrf_token %}
+{% for field in form %}
+<div class="form-group">
+<label>{{ field.label }}</label>
+{{ field }}
+{% if field.errors %}
+<div class="text-danger mt-1"><small>{{ field.errors.0 }}</small></div>
+{% endif %}
+</div>
+{% endfor %}
+<div class="mt-4">
+<button type="submit" class="btn btn-primary">{% if object %}Update{% else %}Save{% endif %}</button>
+<a href="{% url 'schools:exam_list' %}" class="btn btn-secondary">Cancel</a>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer><p>Copyright &copy; 2026 EduSaaS.</p></footer>
+</div>
+</div>
+<script src="{% static 'preskool/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'preskool/js/popper.min.js' %}"></script>
+<script src="{% static 'preskool/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'preskool/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'preskool/js/script.js' %}"></script>
+</body>
+</html>

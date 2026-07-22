@@ -1,0 +1,1277 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ school.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  body,
+  main {
+    background-color: #f8fafc !important;
+  }
+
+  .aurora-bg {
+    background: #f8fafc !important;
+  }
+
+  .school-navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    background: transparent;
+    padding: 5px 0;
+    transition: all 0.3s;
+  }
+
+  .school-navbar.scrolled {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    padding: 12px 0;
+  }
+
+  .school-nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+
+  .school-nav-link:hover,
+  .school-nav-link.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .school-navbar.scrolled .school-nav-link {
+    color: #4a5568;
+  }
+
+  .school-navbar.scrolled .school-nav-link:hover,
+  .school-navbar.scrolled .school-nav-link.active {
+    color: #1a365d;
+    background: #ebf8ff;
+  }
+
+  .school-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .school-nav-brand h6 {
+    color: #fff;
+    font-weight: 800;
+    margin: 0;
+    font-size: 1.05rem;
+    transition: color 0.3s;
+  }
+
+  .school-navbar.scrolled .school-nav-brand h6 {
+    color: #1a365d;
+  }
+
+  .btn-signin-nav {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+
+  .btn-signin-nav:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  .school-navbar.scrolled .btn-signin-nav {
+    background: #1a365d;
+    color: #fff;
+    border-color: #1a365d;
+  }
+
+  .school-navbar.scrolled .btn-signin-nav:hover {
+    background: #2b6cb0;
+  }
+
+  .mobile-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+
+  .mobile-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .school-navbar.scrolled .mobile-toggle {
+    background: white;
+    border-color: #e2e8f0;
+    color: #1a365d;
+  }
+
+  .school-menu-mobile {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 12px;
+    padding: 8px;
+  }
+
+  .school-navbar.scrolled .school-menu-mobile {
+    background: white;
+    border-color: #e2e8f0;
+  }
+
+  .section-padding {
+    padding: 5px 0;
+  }
+
+  .btn-signin {
+    background: white;
+    color: #1a365d;
+    font-weight: 700;
+    padding: 14px 36px;
+    border-radius: 12px;
+    border: none;
+    transition: all 0.3s;
+  }
+
+  .btn-signin:hover {
+    background: #f0f4ff;
+    transform: translateY(-2px);
+  }
+
+  /* About Section */
+  .about-section {
+    background: white;
+  }
+
+  .about-badge {
+    display: inline-block;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+  }
+
+  .about-section h2 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 20px;
+  }
+
+  .about-section p {
+    color: #718096;
+    line-height: 1.8;
+    font-size: 1rem;
+  }
+
+  .stat-box {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+  }
+
+  .stat-box .number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2b6cb0;
+    line-height: 1;
+  }
+
+  .stat-box .label {
+    color: #718096;
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+
+  .value-card {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .value-card .icon {
+    width: 44px;
+    height: 44px;
+    background: #ebf8ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #2b6cb0;
+    margin-bottom: 14px;
+  }
+
+  .value-card h6 {
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .value-card p {
+    color: #718096;
+    font-size: 0.88rem;
+    margin: 0;
+  }
+
+  /* Contact Section */
+  .contact-section {
+    background: #f8fafc;
+  }
+
+  .contact-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    height: 70%;
+    transition: all 0.3s;
+  }
+
+  .contact-card:hover {
+    border-color: #4299e1;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-3px);
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .contact-item:last-child {
+    border-bottom: none;
+  }
+
+  .contact-icon {
+    width: 48px;
+    height: 48px;
+    background: #ebf8ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2b6cb0;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .contact-item h6 {
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .contact-item p {
+    color: #718096;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  /* Slider */
+  .school-slider {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .slide {
+    min-width: 100%;
+    position: relative;
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide-img {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(26, 54, 93, 0.85) 0%, rgba(43, 108, 176, 0.75) 100%);
+  }
+
+  .slide-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    max-width: 700px;
+    padding: 0 24px;
+  }
+
+  .slide-content h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .slide-content p {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  .slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .slider-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .slider-prev {
+    left: 20px;
+  }
+
+  .slider-next {
+    right: 20px;
+  }
+
+  .slider-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+  }
+
+  .slider-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .slider-dot.active {
+    background: white;
+    width: 28px;
+    border-radius: 5px;
+  }
+
+  .slide-bg-pattern {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #1a365d 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Map Section */
+  .map-section {
+    background: #f8fafc;
+  }
+
+  .map-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .map-info {
+    padding: 36px;
+  }
+
+  .map-info h4 {
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .map-embed {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    border: none;
+  }
+
+  .map-wrapper {
+    height: 100%;
+    min-height: 400px;
+  }
+
+  .map-placeholder {
+    height: 100%;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    color: #a0aec0;
+    background: #f7fafc;
+  }
+
+  .map-placeholder i {
+    font-size: 3rem;
+  }
+
+  /* Message Section */
+  .message-section {
+    background: white;
+  }
+
+  .message-form-card {
+    background: #f8fafc;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 40px;
+  }
+
+  .message-form-card h4 {
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .message-form-card .form-control,
+  .message-form-card .form-select {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    color: #1a202c !important;
+    font-size: 0.95rem;
+  }
+
+  .message-form-card .form-control:focus,
+  .message-form-card .form-select:focus {
+    border-color: #2b6cb0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(43, 108, 176, 0.15) !important;
+  }
+
+  .btn-send {
+    background: #1a365d;
+    color: white;
+    font-weight: 700;
+    padding: 14px 36px;
+    border-radius: 12px;
+    border: none;
+    width: 100%;
+    transition: all 0.3s;
+  }
+
+  .btn-send:hover {
+    background: #2b6cb0;
+    transform: translateY(-2px);
+  }
+
+  /* Events Section */
+  .events-section {
+    background: #f8fafc;
+  }
+
+  .event-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    height: 100%;
+    transition: all 0.3s;
+  }
+
+  .event-card:hover {
+    border-color: #4299e1;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+  }
+
+  .event-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #e2e8f0;
+  }
+
+  .event-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #ebf8ff, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    font-size: 2.5rem;
+  }
+
+  .event-body {
+    padding: 24px;
+  }
+
+  .event-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+
+  .event-body h5 {
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+  }
+
+  .event-body p {
+    color: #718096;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .event-location {
+    color: #a0aec0;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Footer */
+  .school-footer {
+    background: #1a365d;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 40px 0;
+    text-align: center;
+  }
+
+  .school-footer a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+  }
+
+  .school-footer a:hover {
+    color: white;
+  }
+
+  .footer-social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    transition: all 0.3s;
+  }
+
+  .footer-social-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .section-padding {
+      padding: 50px 0;
+    }
+
+    .slide {
+      height: 400px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+
+<!-- ═══ SLIDER + NAVBAR ═══ -->
+<section class="school-slider" id="home">
+  <nav class="school-navbar" id="schoolNavbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a href="#home" class="school-nav-brand">
+        {% if school.logo %}
+        <img src="{{ school.logo.url }}" alt="{{ school.name }}"
+          style="width:40px;height:40px;border-radius:10px;object-fit:cover;">
+        {% else %}
+        <div
+          style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1rem;">
+          {{ school.name|slice:":1" }}
+        </div>
+        {% endif %}
+        <h6>{{ school.name }}</h6>
+      </a>
+      <div class="d-none d-md-flex align-items-center gap-2">
+        <a href="#home" class="school-nav-link active">Home</a>
+        <a href="#about" class="school-nav-link">About Us</a>
+        <a href="#events" class="school-nav-link">Events</a>
+        <a href="#location" class="school-nav-link">Location</a>
+        <a href="#message" class="school-nav-link">Message</a>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        {% if user.is_authenticated %}
+        <a href="{% url 'core:dashboard' %}" class="btn-signin-nav">
+          <i class="bi bi-grid me-1"></i> Dashboard
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-signin-nav">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+        </a>
+        {% endif %}
+        <button class="d-md-none mobile-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#schoolMenu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+      </div>
+    </div>
+    <div class="collapse d-md-none" id="schoolMenu">
+      <div class="container school-menu-mobile d-flex flex-column gap-1">
+        <a href="#home" class="school-nav-link">Home</a>
+        <a href="#about" class="school-nav-link">About Us</a>
+        <a href="#events" class="school-nav-link">Events</a>
+        <a href="#location" class="school-nav-link">Location</a>
+        <a href="#message" class="school-nav-link">Send Message</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="slider-track" id="sliderTrack">
+    <!-- Slide 1 -->
+    <div class="slide">
+      {% if school.slider_image_1 %}
+      <div class="slide-img" style="background-image: url('{{ school.slider_image_1.url }}');"></div>
+      {% else %}
+      <div class="slide-bg-pattern"></div>
+      {% endif %}
+      <div class="slide-overlay"></div>
+      <div class="slide-content">
+        <h2>Excellence in Education</h2>
+        <p>Nurturing minds, building character, and shaping the leaders of tomorrow through innovative learning
+          experiences.</p>
+        <a href="#about" class="btn btn-signin">
+          <i class="bi bi-arrow-down-circle me-2"></i>Learn More
+        </a>
+      </div>
+    </div>
+    <!-- Slide 2 -->
+    <div class="slide">
+      {% if school.slider_image_2 %}
+      <div class="slide-img" style="background-image: url('{{ school.slider_image_2.url }}');"></div>
+      {% else %}
+      <div class="slide-bg-pattern"
+        style="animation-delay: -2s; background: linear-gradient(135deg, #2b6cb0 0%, #1a365d 50%, #2b6cb0 100%); background-size: 400% 400%;">
+      </div>
+      {% endif %}
+      <div class="slide-overlay"
+        style="background: linear-gradient(135deg, rgba(43,108,176,0.85) 0%, rgba(26,54,93,0.75) 100%);"></div>
+      <div class="slide-content">
+        <h2>Modern Campus Facilities</h2>
+        <p>State-of-the-art labs, smart classrooms, sports complexes, and a vibrant environment for holistic growth.</p>
+        <a href="#location" class="btn btn-signin">
+          <i class="bi bi-geo-alt me-2"></i>Visit Us
+        </a>
+      </div>
+    </div>
+    <!-- Slide 3 -->
+    <div class="slide">
+      {% if school.slider_image_3 %}
+      <div class="slide-img" style="background-image: url('{{ school.slider_image_3.url }}');"></div>
+      {% else %}
+      <div class="slide-bg-pattern"
+        style="animation-delay: -4s; background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 50%, #1e3a5f 100%); background-size: 400% 400%;">
+      </div>
+      {% endif %}
+      <div class="slide-overlay"
+        style="background: linear-gradient(135deg, rgba(30,58,95,0.85) 0%, rgba(59,130,246,0.75) 100%);"></div>
+      <div class="slide-content">
+        <h2>Admissions Open 2026</h2>
+        <p>Join our community of learners. Limited seats available for the upcoming academic year. Apply now!</p>
+        <a href="#message" class="btn btn-signin">
+          <i class="bi bi-pencil-square me-2"></i>Apply Now
+        </a>
+      </div>
+    </div>
+  </div>
+  <button class="slider-btn slider-prev" onclick="moveSlide(-1)">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <button class="slider-btn slider-next" onclick="moveSlide(1)">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+  <div class="slider-dots" id="sliderDots">
+    <button class="slider-dot active" onclick="goToSlide(0)"></button>
+    <button class="slider-dot" onclick="goToSlide(1)"></button>
+    <button class="slider-dot" onclick="goToSlide(2)"></button>
+  </div>
+</section>
+
+<!-- ═══ ABOUT US ═══ -->
+<section id="about" class="about-section section-padding">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-6">
+        <div class="about-badge">About Us</div>
+        <h2>Building the Future of Education</h2>
+        <p>{% if school %}{% if school.about_description %}{{ school.about_description|linebreaks }}{% else %}{{ school.address|linebreaks }}{% endif %}{% else %}School information not available.{% endif %}</p>
+
+        <div class="row g-3 mt-4">
+          <div class="col-4">
+            <div class="stat-box">
+              <div class="number">{{ school.student_count|default:"0" }}+</div>
+              <div class="label">Students</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box">
+              <div class="number">{{ school.teacher_count|default:"0" }}+</div>
+              <div class="label">Teachers</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box">
+              <div class="number">{% if school.established_year %}{{ school.established_year }}{% else %}N/A{% endif %}
+              </div>
+              <div class="label">Established</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="value-card h-100">
+              <div class="icon"><i class="bi bi-bullseye"></i></div>
+              <h6>Our Mission</h6>
+              <p>{% if school.mission %}{{ school.mission }}{% else %}Provide world-class education that inspires
+                curiosity and innovation.{% endif %}</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="value-card h-100">
+              <div class="icon"><i class="bi bi-eye"></i></div>
+              <h6>Our Vision</h6>
+              <p>{% if school.vision %}{{ school.vision }}{% else %}Be a leading institution shaping future-ready
+                leaders.{% endif %}</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="value-card h-100">
+              <div class="icon"><i class="bi bi-heart"></i></div>
+              <h6>Our Values</h6>
+              <p>Integrity, excellence, respect, and community.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="value-card h-100">
+              <div class="icon"><i class="bi bi-trophy"></i></div>
+              <h6>Achievements</h6>
+              <p>Award-winning programs and top academic results.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACT US ═══ -->
+<section id="contact" class="contact-section section-padding">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="about-badge">Contact Us</div>
+      <h2 style="font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:#1a202c;">Get in Touch</h2>
+      <p class="mt-2" style="color:#718096;max-width:500px;margin:12px auto 0;">Have questions? We'd love to hear from
+        you.</p>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-4 col-md-6">
+        <div class="contact-card text-center">
+          <div class="contact-icon mx-auto mb-3"><i class="bi bi-geo-alt-fill"></i></div>
+          <h6>Address</h6>
+          <p>{{ school.address }}</p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="contact-card text-center">
+          <div class="contact-icon mx-auto mb-3"><i class="bi bi-envelope-fill"></i></div>
+          <h6>Email</h6>
+          <p>{{ school.contact_email }}</p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="contact-card text-center">
+          <div class="contact-icon mx-auto mb-3"><i class="bi bi-telephone-fill"></i></div>
+          <h6>Phone</h6>
+          <p>{{ school.contact_phone }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ EVENTS ═══ -->
+<section id="events" class="events-section section-padding">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="about-badge">What's Happening</div>
+      <h2 style="font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:#1a202c;">Upcoming Events</h2>
+      <p class="mt-2" style="color:#718096;max-width:500px;margin:12px auto 0;">Stay updated with our latest events and
+        activities.</p>
+    </div>
+    {% with events=school.events.filter.is_active.all|slice:":6" %}
+    {% if events %}
+    <div class="row g-4">
+      {% for event in events %}
+      <div class="col-md-6 col-lg-4">
+        <div class="event-card">
+          {% if event.image %}
+          <img src="{{ event.image.url }}" alt="{{ event.name }}" class="event-image">
+          {% else %}
+          <div class="event-image-placeholder">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+          {% endif %}
+          <div class="event-body">
+            {% if event.event_date %}
+            <div class="event-date-badge">
+              <i class="bi bi-calendar3"></i>
+              {{ event.event_date|date:"M d, Y" }}
+              {% if event.event_time %} &middot; {{ event.event_time|date:"g:i A" }}{% endif %}
+            </div>
+            {% endif %}
+            {% if event.name %}<h5>{{ event.name }}</h5>{% endif %}
+            {% if event.description %}<p>{{ event.description|truncatewords:20 }}</p>{% endif %}
+            {% if event.location %}
+            <div class="event-location">
+              <i class="bi bi-geo-alt"></i> {{ event.location }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-calendar-x" style="font-size:3rem;color:#cbd5e0;"></i>
+      <p class="mt-3" style="color:#a0aec0;font-size:1rem;">No upcoming events at this time.</p>
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+</section>
+
+<!-- ═══ SCHOOL LOCATION / MAP ═══ -->
+<section id="location" class="map-section section-padding">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="about-badge">Find Us</div>
+      <h2 style="font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:#1a202c;">Our Location</h2>
+      <p class="mt-2" style="color:#718096;max-width:500px;margin:12px auto 0;">Visit our campus. We're easy to find and
+        always happy to welcome you.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="map-card">
+          <div class="map-info">
+            <h4>{{ school.name }}</h4>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
+              <div>
+                <h6>Address</h6>
+                <p>{{ school.address }}</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="bi bi-clock-fill"></i></div>
+              <div>
+                <h6>Office Hours</h6>
+                <p>Saturday – Thursday<br>8:00 AM – 4:00 PM</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+              <div>
+                <h6>Contact</h6>
+                <p>{{ school.contact_phone }}</p>
+                {% if school.secondary_phone %}<p>{{ school.secondary_phone }}</p>{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="map-card">
+          <div class="map-wrapper">
+            <div id="schoolMap" style="width: 100%; height: 400px; border-radius: 12px;"></div>
+            {% if school.address %}
+            <div class="text-center mt-3">
+              <button class="btn btn-primary" onclick="getMyLocation(this)">
+                <i class="bi bi-geo-alt-fill"></i> Get Directions from My Location
+              </button>
+            </div>
+            {% endif %}
+            {% if not school.address %}
+            <div class="map-placeholder">
+              <i class="bi bi-geo-alt"></i>
+              <p>Map not configured yet. Add school address in admin.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SEND A MESSAGE ═══ -->
+<section id="message" class="message-section section-padding">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <div class="about-badge">Get in Touch</div>
+        <h2 style="font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:#1a202c;margin-bottom:16px;">Send Us a
+          Message</h2>
+        <p style="color:#718096;line-height:1.8;margin-bottom:28px;">Have a question about admissions, academics, or
+          anything else? Fill out the form and our team will get back to you within 24 hours.</p>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+          <div>
+            <h6>Email Us</h6>
+            <p>{{ school.contact_email }}</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+          <div>
+            <h6>Call Us</h6>
+            <p>{{ school.contact_phone }}</p>
+            {% if school.secondary_phone %}<p>{{ school.secondary_phone }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="message-form-card">
+          <form>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold" style="color:#1a202c;font-size:0.85rem;">Full Name</label>
+                <input type="text" class="form-control" placeholder="Your name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" style="color:#1a202c;font-size:0.85rem;">Email</label>
+                <input type="email" class="form-control" placeholder="Your email">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" style="color:#1a202c;font-size:0.85rem;">Phone</label>
+                <input type="tel" class="form-control" placeholder="Your phone number">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" style="color:#1a202c;font-size:0.85rem;">Subject</label>
+                <select class="form-select">
+                  <option selected disabled>Select a topic</option>
+                  <option>Admission Inquiry</option>
+                  <option>Academic Information</option>
+                  <option>Fee Structure</option>
+                  <option>Campus Visit</option>
+                  <option>General Question</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold" style="color:#1a202c;font-size:0.85rem;">Message</label>
+                <textarea class="form-control" rows="5" placeholder="Write your message..."></textarea>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-send">
+                  <i class="bi bi-send me-2"></i>Send Message
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="school-footer">
+  <div class="container">
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+      {% if school.logo %}
+      <img src="{{ school.logo.url }}" alt="{{ school.name }}"
+        style="width:32px;height:32px;border-radius:8px;object-fit:cover;filter:brightness(0) invert(1);">
+      {% endif %}
+      <span class="fw-bold text-white">{{ school.name }}</span>
+    </div>
+    {% if school.facebook_url or school.twitter_url or school.instagram_url or school.youtube_url %}
+    <div class="d-flex justify-content-center gap-3 mb-3">
+      {% if school.facebook_url %}
+      <a href="{{ school.facebook_url }}" target="_blank" class="footer-social-icon"><i class="bi bi-facebook"></i></a>
+      {% endif %}
+      {% if school.twitter_url %}
+      <a href="{{ school.twitter_url }}" target="_blank" class="footer-social-icon"><i class="bi bi-twitter-x"></i></a>
+      {% endif %}
+      {% if school.instagram_url %}
+      <a href="{{ school.instagram_url }}" target="_blank" class="footer-social-icon"><i
+          class="bi bi-instagram"></i></a>
+      {% endif %}
+      {% if school.youtube_url %}
+      <a href="{{ school.youtube_url }}" target="_blank" class="footer-social-icon"><i class="bi bi-youtube"></i></a>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="d-flex justify-content-center gap-4 mb-3">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#events">Events</a>
+      <a href="#location">Location</a>
+      <a href="#message">Message</a>
+    </div>
+    <p class="mb-0" style="font-size:0.82rem;">&copy; 2026 {{ school.name }}. All rights reserved.</p>
+  </div>
+</footer>
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+<script>
+  let currentSlide = 0;
+  const track = document.getElementById('sliderTrack');
+  const dots = document.querySelectorAll('.slider-dot');
+  const totalSlides = 3;
+  let autoSlide;
+  let map, schoolMarker, schoolCircle, routingControl;
+  let schoolLat, schoolLng;
+
+  function updateSlider() {
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+  }
+
+  function moveSlide(dir) {
+    currentSlide = (currentSlide + dir + totalSlides) % totalSlides;
+    updateSlider();
+    resetAutoSlide();
+  }
+
+  function goToSlide(index) {
+    currentSlide = index;
+    updateSlider();
+    resetAutoSlide();
+  }
+
+  function resetAutoSlide() {
+    clearInterval(autoSlide);
+    autoSlide = setInterval(() => moveSlide(1), 5000);
+  }
+
+  autoSlide = setInterval(() => moveSlide(1), 5000);
+
+  window.addEventListener('scroll', function () {
+    const navbar = document.getElementById('schoolNavbar');
+    if (window.scrollY > 60) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // Initialize Leaflet map with school location and circle
+  function initMap() {
+    const schoolAddress = "{{ school.address|escapejs }}";
+
+    // Show loading state
+    const mapDiv = document.getElementById('schoolMap');
+    if (mapDiv) {
+      mapDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">Loading map...</div>';
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(schoolAddress)}&limit=1`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length > 0) {
+          schoolLat = parseFloat(data[0].lat);
+          schoolLng = parseFloat(data[0].lon);
+
+          map = L.map('schoolMap').setView([schoolLat, schoolLng], 15);
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+
+          // Add school marker
+          schoolMarker = L.marker([schoolLat, schoolLng]).addTo(map)
+            .bindPopup(`<b>{{ school.name|escapejs }}</b><br>${schoolAddress}`)
+            .openPopup();
+
+          // Add circle around school (500m radius)
+          schoolCircle = L.circle([schoolLat, schoolLng], {
+            color: '#667eea',
+            fillColor: '#667eea',
+            fillOpacity: 0.15,
+            radius: 500
+          }).addTo(map);
+        } else {
+          // Fallback: show map without specific location
+          map = L.map('schoolMap').setView([20, 0], 2);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+          alert('Could not find school location. Please check the address in admin.');
+        }
+      })
+      .catch(err => {
+        console.error('Error loading map:', err);
+        if (mapDiv) {
+          mapDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">Error loading map. Please refresh.</div>';
+        }
+      });
+  }
+
+  // Get user location and show directions on same map
+  function getMyLocation(btn) {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    if (!schoolLat || !schoolLng) {
+      alert('School location not loaded yet. Please wait and try again.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Getting location...';
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        // Remove previous routing if exists
+        if (routingControl) {
+          map.removeControl(routingControl);
+        }
+
+        // Add routing from user to school
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(userLat, userLng),
+            L.latLng(schoolLat, schoolLng)
+          ],
+          routeWhileDragging: false,
+          showAlternatives: false,
+          createMarker: function(i, waypoint, n) {
+            if (i === 0) {
+              return L.marker(waypoint.latLng).bindPopup('Your Location');
+            }
+            return null; // School marker already exists
+          }
+        }).addTo(map);
+
+        // Fit map to show both points
+        const bounds = L.latLngBounds([
+          [userLat, userLng],
+          [schoolLat, schoolLng]
+        ]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Directions Loaded';
+      },
+      function(error) {
+        alert('Unable to retrieve your location. Please allow location access and try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-geo-alt-fill"></i> Get Directions from My Location';
+      }
+    );
+  }
+
+  // Initialize map on page load
+  document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %}
+{% endblock %}

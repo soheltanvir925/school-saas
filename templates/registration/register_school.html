@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Register Your School - EduSaaS{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-lg p-4">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">School Registration</h2>
+                        <p class="text-muted">Fill in the details to set up your school management system.</p>
+                    </div>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3 border-bottom pb-2">School Information</h5>
+                        <div class="mb-3">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            {{ form.name.errors }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.slug.label_tag }}
+                            <div class="input-group">
+                                <span class="input-group-text">edusaas.com/</span>
+                                {{ form.slug }}
+                            </div>
+                            <small class="text-muted">Unique URL for your school.</small>
+                            {{ form.slug.errors }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.address.label_tag }}
+                            {{ form.address }}
+                            {{ form.address.errors }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.contact_phone.label_tag }}
+                            {{ form.contact_phone }}
+                            {{ form.contact_phone.errors }}
+                        </div>
+
+                        <h5 class="mt-4 mb-3 border-bottom pb-2">Admin Account</h5>
+                        <div class="mb-3">
+                            {{ form.admin_email.label_tag }}
+                            {{ form.admin_email }}
+                            {{ form.admin_email.errors }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.admin_password.label_tag }}
+                            {{ form.admin_password }}
+                            {{ form.admin_password.errors }}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Complete Registration</button>
+                            <a href="{% url 'core:index' %}" class="btn btn-link text-muted text-decoration-none">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,438 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>Dashboard - {{ request.user.school.name|default:"Admin" }}</title>
+    <link rel="shortcut icon" href="{% static 'preskool/img/favicon.png' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap">
+    <link rel="stylesheet" href="{% static 'preskool/plugins/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/fontawesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'preskool/plugins/fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'preskool/css/style.css' %}">
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <a href="{% url 'core:dashboard' %}" class="logo">
+                    {% if request.user.school.logo %}
+                    <img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" style="max-height:40px; width:auto;">
+                    {% else %}
+                    <img src="{% static 'preskool/img/logo.png' %}" alt="Logo">
+                    {% endif %}
+                </a>
+                <a href="{% url 'core:dashboard' %}" class="logo logo-small">
+                    {% if request.user.school.logo %}
+                    <img src="{{ request.user.school.logo.url }}" alt="{{ request.user.school.name }}" width="30" height="30" style="object-fit:contain;">
+                    {% else %}
+                    <img src="{% static 'preskool/img/logo-small.png' %}" alt="Logo" width="30" height="30">
+                    {% endif %}
+                </a>
+            </div>
+            <a href="javascript:void(0);" id="toggle_btn">
+                <i class="fas fa-align-left"></i>
+            </a>
+            <div class="top-nav-search">
+                <form>
+                    <input type="text" class="form-control" placeholder="Search here">
+                    <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <a class="mobile_btn" id="mobile_btn">
+                <i class="fas fa-bars"></i>
+            </a>
+            <ul class="nav user-menu">
+                <li class="nav-item dropdown noti-dropdown">
+                    <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                        <i class="far fa-bell"></i> <span class="badge badge-pill">3</span>
+                    </a>
+                    <div class="dropdown-menu notifications">
+                        <div class="topnav-dropdown-header">
+                            <span class="notification-title">Notifications</span>
+                            <a href="javascript:void(0)" class="clear-noti"> Clear All </a>
+                        </div>
+                        <div class="noti-content">
+                            <ul class="notification-list">
+                                <li class="notification-message">
+                                    <a href="#">
+                                        <div class="media">
+                                            <span class="avatar avatar-sm">
+                                                <img class="avatar-img rounded-circle" alt="User Image" src="{% static 'preskool/img/profiles/avatar-02.jpg' %}">
+                                            </span>
+                                            <div class="media-body">
+                                                <p class="noti-details"><span class="noti-title">{{ school.name|default:"System" }}</span> has approved <span class="noti-title">your estimate</span></p>
+                                                <p class="noti-time"><span class="notification-time">4 mins ago</span></p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="topnav-dropdown-footer">
+                            <a href="#">View all Notifications</a>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item dropdown has-arrow">
+                    <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                        <span class="user-img"><img class="rounded-circle" src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" width="31" alt="{{ user.username }}"></span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="user-header">
+                            <div class="avatar avatar-sm">
+                                <img src="{% static 'preskool/img/profiles/avatar-01.jpg' %}" alt="User Image" class="avatar-img rounded-circle">
+                            </div>
+                            <div class="user-text">
+                                <h6>{{ user.username }}</h6>
+                                <p class="text-muted mb-0">{{ user.role|title }}</p>
+                            </div>
+                        </div>
+                        <a class="dropdown-item" href="#">My Profile</a>
+                        <a class="dropdown-item" href="#">Inbox</a>
+                        <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item" style="background: none; border: none; cursor: pointer;">Logout</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-inner slimscroll">
+                <div id="sidebar-menu" class="sidebar-menu">
+                    <ul>
+                        <li class="menu-title"><span>Main Menu</span></li>
+                        <li class="submenu active">
+                            <a href="#"><i class="fas fa-user-graduate"></i> <span> Dashboard</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'core:dashboard' %}" class="active">Admin Dashboard</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-user-graduate"></i> <span> Students</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:student_list' %}">Student List</a></li>
+                                <li><a href="{% url 'schools:student_add' %}">Student Add</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span> Teachers</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:teacher_list' %}">Teacher List</a></li>
+                                <li><a href="{% url 'schools:teacher_add' %}">Teacher Add</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-building"></i> <span> Streams</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:stream_list' %}">Stream List</a></li>
+                                <li><a href="{% url 'schools:stream_add' %}">Stream Add</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-book-reader"></i> <span> Subjects</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:subject_list' %}">Subject List</a></li>
+                                <li><a href="{% url 'schools:subject_add' %}">Subject Add</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-door-open"></i> <span> Classrooms</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:classroom_list' %}">Classroom List</a></li>
+                                <li><a href="{% url 'schools:classroom_add' %}">Classroom Add</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-pencil-alt"></i> <span> Exams</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:exam_list' %}">Exam List</a></li>
+                                <li><a href="{% url 'schools:exam_add' %}">Exam Add</a></li>
+                                <li><a href="{% url 'schools:examtype_list' %}">Exam Types</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-chart-line"></i> <span> Grades</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:grade_list' %}">Grade List</a></li>
+                                <li><a href="{% url 'schools:grade_add' %}">Add Grade</a></li>
+                                <li><a href="{% url 'schools:gradescale_list' %}">Grade Scales</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-money-bill"></i> <span> Fees</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:feepayment_list' %}">Payments</a></li>
+                                <li><a href="{% url 'schools:feepayment_add' %}">Add Payment</a></li>
+                                <li><a href="{% url 'schools:feestructure_list' %}">Fee Structures</a></li>
+                                <li><a href="{% url 'schools:feecategory_list' %}">Fee Categories</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-calendar-check"></i> <span> Attendance</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'schools:attendance_list' %}">Attendance List</a></li>
+                                <li><a href="{% url 'schools:attendance_add' %}">Add Attendance</a></li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>Management</span></li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-file-invoice-dollar"></i> <span> Accounts</span> <span class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="#">Fees Collection</a></li>
+                                <li><a href="#">Expenses</a></li>
+                                <li><a href="#">Salary</a></li>
+                                <li><a href="#">Add Fees</a></li>
+                                <li><a href="#">Add Expenses</a></li>
+                                <li><a href="#">Add Salary</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#"><i class="fas fa-holly-berry"></i> <span>Holiday</span></a></li>
+                        <li><a href="#"><i class="fas fa-comment-dollar"></i> <span>Fees</span></a></li>
+                        <li><a href="#"><i class="fas fa-clipboard-list"></i> <span>Exam list</span></a></li>
+                        <li><a href="#"><i class="fas fa-calendar-day"></i> <span>Events</span></a></li>
+                        <li><a href="#"><i class="fas fa-table"></i> <span>Time Table</span></a></li>
+                        <li><a href="#"><i class="fas fa-book"></i> <span>Library</span></a></li>
+                        <li class="menu-title"><span>Others</span></li>
+                        <li><a href="#"><i class="fas fa-baseball-ball"></i> <span>Sports</span></a></li>
+                        <li><a href="#"><i class="fas fa-hotel"></i> <span>Hostel</span></a></li>
+                        <li><a href="#"><i class="fas fa-bus"></i> <span>Transport</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="page-wrapper">
+            <div class="content container-fluid">
+                <div class="page-header">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h3 class="page-title">Welcome {{ user.username }}!</h3>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-one w-100">
+                            <div class="card-body">
+                                <div class="db-widgets d-flex justify-content-between align-items-center">
+                                    <div class="db-icon">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div class="db-info">
+                                        <h3>{{ total_students|default:"0" }}</h3>
+                                        <h6>Students</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-two w-100">
+                            <div class="card-body">
+                                <div class="db-widgets d-flex justify-content-between align-items-center">
+                                    <div class="db-icon">
+                                        <i class="fas fa-crown"></i>
+                                    </div>
+                                    <div class="db-info">
+                                        <h3>{{ total_teachers|default:"0" }}</h3>
+                                        <h6>Teachers</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-three w-100">
+                            <div class="card-body">
+                                <div class="db-widgets d-flex justify-content-between align-items-center">
+                                    <div class="db-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="db-info">
+                                        <h3>{{ total_classrooms|default:"0" }}</h3>
+                                        <h6>Classrooms</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-four w-100">
+                            <div class="card-body">
+                                <div class="db-widgets d-flex justify-content-between align-items-center">
+                                    <div class="db-icon">
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div class="db-info">
+                                        <h3>${{ total_revenue|default:"0" }}</h3>
+                                        <h6>Revenue</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-lg-6">
+                        <div class="card card-chart">
+                            <div class="card-header">
+                                <div class="row align-items-center">
+                                    <div class="col-6">
+                                        <h5 class="card-title">Revenue</h5>
+                                    </div>
+                                    <div class="col-6">
+                                        <ul class="list-inline-group text-right mb-0 pl-0">
+                                            <li class="list-inline-item">
+                                                <div class="form-group mb-0 amount-spent-select">
+                                                    <select class="form-control form-control-sm">
+                                                        <option>Today</option>
+                                                        <option>Last Week</option>
+                                                        <option>Last Month</option>
+                                                    </select>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="apexcharts-area"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-6">
+                        <div class="card card-chart">
+                            <div class="card-header">
+                                <div class="row align-items-center">
+                                    <div class="col-6">
+                                        <h5 class="card-title">Number of Students</h5>
+                                    </div>
+                                    <div class="col-6">
+                                        <ul class="list-inline-group text-right mb-0 pl-0">
+                                            <li class="list-inline-item">
+                                                <div class="form-group mb-0 amount-spent-select">
+                                                    <select class="form-control form-control-sm">
+                                                        <option>Today</option>
+                                                        <option>Last Week</option>
+                                                        <option>Last Month</option>
+                                                    </select>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title">Star Students</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-center">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Exam</th>
+                                                <th class="text-center">Marks</th>
+                                                <th class="text-right">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for g in top_students %}
+                                            <tr>
+                                                <td class="text-nowrap">{{ g.student.first_name }} {{ g.student.last_name }}</td>
+                                                <td class="text-nowrap">{{ g.exam.name }}</td>
+                                                <td class="text-center">{{ g.marks_obtained }}/{{ g.exam.total_marks }}</td>
+                                                <td class="text-right">{{ g.exam.exam_date|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="4" class="text-center text-muted">No grades recorded yet</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title">Student Activity</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="activity-feed">
+                                    {% for a in student_activity %}
+                                    <li class="feed-item">
+                                        <div class="feed-date">{{ a.created_at|date:"M d" }}</div>
+                                        <span class="feed-text"><a>{{ a.student.first_name }} {{ a.student.last_name }}</a> scored {{ a.marks_obtained }} in <a>"{{ a.exam.name }}"</a></span>
+                                    </li>
+                                    {% empty %}
+                                    <li class="feed-item">
+                                        <div class="feed-date">--</div>
+                                        <span class="feed-text text-muted">No activity yet</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-3 col-sm-6 col-12">
+                        <div class="card flex-fill fb sm-box">
+                            <i class="fas fa-user-check"></i>
+                            <h6>{{ today_attendance|default:"0" }}</h6>
+                            <p>Present Today</p>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12">
+                        <div class="card flex-fill twitter sm-box">
+                            <i class="fas fa-user-times"></i>
+                            <h6>{{ today_absent|default:"0" }}</h6>
+                            <p>Absent Today</p>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12">
+                        <div class="card flex-fill insta sm-box">
+                            <i class="fas fa-venus-mars"></i>
+                            <h6>{{ male_students|default:"0" }}/{{ female_students|default:"0" }}</h6>
+                            <p>M/F Students</p>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12">
+                        <div class="card flex-fill linkedin sm-box">
+                            <i class="fas fa-clock"></i>
+                            <h6>{{ pending_fees|default:"0" }}</h6>
+                            <p>Pending Fees</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer>
+                <p>Copyright &copy; {% now "Y" %} EduSaaS. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+    <script src="{% static 'preskool/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'preskool/js/popper.min.js' %}"></script>
+    <script src="{% static 'preskool/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'preskool/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <script src="{% static 'preskool/plugins/apexchart/apexcharts.min.js' %}"></script>
+    <script src="{% static 'preskool/plugins/apexchart/chart-data.js' %}"></script>
+    <script src="{% static 'preskool/js/script.js' %}"></script>
+</body>
+</html>
